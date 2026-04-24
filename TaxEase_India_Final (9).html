@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TaxEase India - Expense &amp; Tax Calculator</title>
+<!-- No external fonts needed - using system fonts -->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--bg2:#141720;--bg3:#1c1f2a;--card:#1e2130;--card2:#252840;
+  --gold:#f0a500;--gold2:#ffc233;--gold3:#fff0c0;
+  --blue:#4f8ef7;--teal:#2ec4b6;--coral:#ff6b6b;--green:#51cf66;
+  --text:#e8eaf0;--text2:#9ba3bf;--text3:#5a6382;
+  --border:#2a2f45;--border2:#3a4060;
+  --r:12px;--r2:8px;
+}
+/* LIGHT THEME */
+[data-theme="light"]{
+  --bg:#f4f5fa;--bg2:#ffffff;--bg3:#eef0f8;--card:#ffffff;--card2:#e8ebf8;
+  --text:#1a1d2e;--text2:#4a5080;--text3:#8890b0;
+  --border:#dde0f0;--border2:#c5cbea;
+}
+body{font-family:-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+h1,h2,h3,h4{font-family:-apple-system,Arial,sans-serif}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:#0d0f14;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s ease}
+#splash.hide{opacity:0;pointer-events:none}
+.sp-logo{font-family:-apple-system,Arial,sans-serif;font-size:40px;font-weight:700;background:linear-gradient(135deg,#ffc233,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;animation:spFadeUp .6s ease both}
+.sp-sub{color:#9ba3bf;font-size:13px;margin-bottom:36px;animation:spFadeUp .6s .15s ease both;opacity:0}
+.sp-bar{width:180px;height:3px;background:#1c1f2a;border-radius:2px;overflow:hidden;animation:spFadeUp .6s .25s ease both;opacity:0}
+.sp-fill{height:100%;background:linear-gradient(90deg,#f0a500,#ffc233);border-radius:2px;animation:spLoad 1.8s .3s ease forwards;width:0}
+@keyframes spFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spLoad{from{width:0}to{width:100%}}
+
+/* TOPBAR */
+.topbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;padding:8px 0 0;margin-bottom:-16px}
+.theme-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:-apple-system,Arial,sans-serif;font-weight:600;transition:all .2s}
+.theme-btn:hover{border-color:var(--gold);color:var(--gold)}
+.profile-btn{background:var(--gold);border:none;color:#0d0f14;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-family:-apple-system,Arial,sans-serif;font-weight:700;transition:all .2s}
+.profile-btn:hover{background:var(--gold2)}
+
+/* PROFILE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);padding:28px;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+.modal-box h2{font-size:17px;margin-bottom:6px;color:var(--gold)}
+.modal-box p{font-size:12px;color:var(--text3);margin-bottom:20px}
+.modal-field{margin-bottom:14px}
+.modal-footer{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
+.profile-display{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.profile-avatar{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#0d0f14;font-family:-apple-system,Arial,sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.app{max-width:1100px;margin:0 auto;padding:20px 16px}
+
+.header{text-align:center;padding:32px 0 24px}
+.header h1{font-size:clamp(22px,4vw,36px);font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,#ffc233,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header p{color:var(--text2);font-size:14px;margin-top:6px}
+.badge{display:inline-block;background:var(--bg3);border:1px solid var(--border2);color:var(--gold);font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px;font-family:-apple-system,Arial,sans-serif;letter-spacing:0.5px}
+
+.nav{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:5px;margin-bottom:24px}
+.nav button{flex:1;padding:9px 8px;border:none;background:transparent;color:var(--text2);font-family:-apple-system,Arial,sans-serif;font-size:13px;font-weight:500;border-radius:var(--r2);cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav button.active{background:var(--gold);color:#0d0f14;font-weight:600}
+.nav button:hover:not(.active){background:var(--bg3);color:var(--text)}
+
+.tab{display:none}.tab.active{display:block}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:650px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:768px){
+  .app{padding:12px 10px}
+  .header{padding:20px 0 16px}
+  .header p{font-size:12px}
+  .topbar{margin-bottom:-8px}
+  .nav{gap:2px;padding:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+  .nav::-webkit-scrollbar{height:0}
+  .nav button{font-size:11px;padding:8px 10px;min-width:max-content;flex:none}
+  .card{padding:14px}
+  .stat-card{padding:12px}
+  .stat-card .value{font-size:17px}
+  .expense-form{grid-template-columns:1fr 1fr;gap:8px}
+  .expense-item{flex-wrap:wrap;gap:6px;padding:8px 10px}
+  .exp-name{font-size:13px;min-width:0;flex-basis:100%}
+  .exp-amt{margin-left:auto}
+  .regime-toggle{flex-direction:column;gap:6px}
+  .grid2,.grid3,.grid4{grid-template-columns:1fr;gap:12px}
+  .rep-option-grid{grid-template-columns:1fr}
+  .section-title{font-size:14px}
+  .tax-field label{font-size:12px}
+  .top-bar{flex-direction:column;align-items:flex-start;gap:8px}
+  .top-bar div:last-child{width:100%;display:flex;gap:8px}
+  .top-bar .btn{flex:1;text-align:center;justify-content:center}
+  .modal-box{padding:20px}
+  .modal-grid{grid-template-columns:1fr}
+  .ppf-table{font-size:11px}
+  .ppf-table th,.ppf-table td{padding:6px 6px}
+  .slab-table{font-size:12px}
+  .chart-wrap{height:180px}
+  .report-row{font-size:13px}
+  .print-area{padding:14px}
+  #sug-total-saving{flex-direction:column;align-items:flex-start;gap:4px}
+  .btn{padding:9px 14px;font-size:12px}
+}
+
+@media(max-width:420px){
+  .grid4{grid-template-columns:1fr 1fr}
+  .header h1{font-size:22px}
+  .nav button{font-size:10px;padding:7px 8px}
+  .expense-form{grid-template-columns:1fr}
+  .stat-card .label{font-size:10px}
+}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card h3{font-size:14px;color:var(--text2);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.8px}
+
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.stat-card .label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px}
+.stat-card .value{font-family:-apple-system,Arial,sans-serif;font-size:clamp(14px,1.6vw,20px);font-weight:700;color:var(--text);word-break:break-word;line-height:1.5;padding-bottom:2px;overflow:visible}
+.stat-card .value.gold{color:var(--gold)}
+.stat-card .value.green{color:var(--green)}
+.stat-card .value.coral{color:var(--coral)}
+.stat-card .value.blue{color:var(--blue)}
+
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500}
+input,select{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:14px;padding:9px 12px;border-radius:var(--r2);font-family:-apple-system,Arial,sans-serif;outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--gold)}
+select option{background:var(--bg3)}
+
+.btn{padding:10px 20px;border:none;border-radius:var(--r2);font-family:-apple-system,Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-gold{background:var(--gold);color:#0d0f14}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{background:transparent;border:1px solid #ff6b6b33;color:var(--coral);font-size:12px;padding:5px 10px;border-radius:var(--r2);cursor:pointer}
+.btn-danger:hover{background:#ff6b6b22}
+.btn-green{background:var(--green);color:#0d0f14}
+.btn-green:hover{filter:brightness(1.1)}
+
+.expense-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:20px}
+@media(max-width:600px){.expense-form{grid-template-columns:1fr 1fr}}
+
+.expense-list{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto}
+.expense-item{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px}
+.exp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.exp-name{flex:1;font-size:14px}
+.exp-cat{font-size:11px;color:var(--text3);background:var(--bg2);padding:2px 8px;border-radius:10px}
+.exp-amt{font-family:-apple-system,Arial,sans-serif;font-weight:700;color:var(--gold);font-size:14px;min-width:80px;text-align:right;line-height:1.5;overflow:visible}
+
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+.tax-field{margin-bottom:14px}
+
+.regime-toggle{display:flex;gap:8px;margin-bottom:20px}
+.regime-btn{flex:1;padding:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);border-radius:var(--r2);cursor:pointer;font-family:-apple-system,Arial,sans-serif;font-size:13px;font-weight:500;transition:all .2s;text-align:center}
+.regime-btn.active{background:var(--card2);border-color:var(--gold);color:var(--gold)}
+
+.slab-table{width:100%;border-collapse:collapse;font-size:13px}
+.slab-table th{text-align:left;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.6px;padding:6px 0;border-bottom:1px solid var(--border)}
+.slab-table td{padding:8px 0;border-bottom:1px solid var(--border)}
+.slab-table tr:last-child td{border-bottom:none}
+.slab-table .rate{font-family:-apple-system,Arial,sans-serif;font-weight:700}
+
+.report-section{margin-bottom:24px}
+.report-section h3{font-family:-apple-system,Arial,sans-serif;font-size:15px;font-weight:600;color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+.report-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.report-row:last-child{border-bottom:none}
+.report-row .rkey{color:var(--text2)}
+.report-row .rval{font-weight:500}
+.report-row.highlight{background:var(--bg3);margin:0 -12px;padding:10px 12px;border-radius:var(--r2);border-bottom:none;margin-bottom:4px}
+.report-row.highlight .rval{color:var(--gold);font-family:-apple-system,Arial,sans-serif;font-size:16px;font-weight:700}
+
+.progress-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s}
+
+.print-area{padding:20px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500}
+.tag-green{background:#51cf6622;color:var(--green)}
+.tag-coral{background:#ff6b6b22;color:var(--coral)}
+.tag-gold{background:#f0a50022;color:var(--gold)}
+
+.suggestion-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
+.suggestion-card:hover{border-color:var(--gold)}
+.suggestion-card:last-child{margin-bottom:0}
+.sug-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:1px}
+.sug-icon.green{background:rgba(81,207,102,0.15)}
+.sug-icon.gold{background:rgba(240,165,0,0.15)}
+.sug-icon.blue{background:rgba(79,142,247,0.15)}
+.sug-icon.coral{background:rgba(255,107,107,0.15)}
+.sug-title{font-family:-apple-system,Arial,sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.5}
+.sug-desc{font-size:12px;color:var(--text2);line-height:1.6;font-family:-apple-system,Arial,sans-serif}
+.sug-saving{font-family:-apple-system,Arial,sans-serif;font-size:13px;font-weight:700;color:var(--green);margin-top:6px;line-height:1.6;padding-bottom:3px;overflow:visible}
+.sug-empty{text-align:center;padding:24px;color:var(--text3);font-size:13px}
+#sug-total-saving{margin-top:14px;padding:14px 16px;background:rgba(81,207,102,0.08);border:1px solid rgba(81,207,102,0.25);border-radius:var(--r2);display:flex;justify-content:space-between;align-items:center;overflow:visible}
+#sug-total-saving span:first-child{font-size:13px;color:var(--text2);font-weight:500;line-height:1.5}
+#sug-total-amt{font-family:-apple-system,Arial,sans-serif;font-size:20px;font-weight:700;color:var(--green);line-height:1.6;padding-bottom:4px;overflow:visible}
+
+/* REPORT SELECTOR */
+.rep-option-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
+@media(max-width:600px){.rep-option-grid{grid-template-columns:1fr}}
+.rep-option{cursor:pointer;display:block}
+.rep-option input[type="checkbox"]{display:none}
+.rep-option-box{display:flex;align-items:flex-start;gap:14px;padding:16px;border:2px solid var(--border);border-radius:var(--r);background:var(--bg3);transition:all .2s;position:relative}
+.rep-option input:checked + .rep-option-box{border-color:var(--gold);background:rgba(240,165,0,0.05)}
+.rep-option-box:hover{border-color:var(--border2)}
+.rep-option-icon{width:40px;height:40px;border-radius:var(--r2);display:flex;align-items:center;justify-content:center;font-family:-apple-system,Arial,sans-serif;font-size:18px;font-weight:700;flex-shrink:0}
+.rep-option-title{font-family:-apple-system,Arial,sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.rep-option-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.rep-option-check{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#0d0f14;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center}
+.rep-option input:checked + .rep-option-box .rep-option-check{display:flex}
+.ppf-fact{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.5}
+.ppf-fact:last-child{border-bottom:none}
+.ppf-fact-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ppf-table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.ppf-table th{text-align:right;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.6px;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600}
+.ppf-table th:first-child{text-align:center}
+.ppf-table td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:right;font-size:13px;color:var(--text)}
+.ppf-table td:first-child{text-align:center;font-family:-apple-system,Arial,sans-serif;font-weight:700;color:var(--gold)}
+.ppf-table tr:last-child td{border-bottom:none;font-weight:700;color:var(--gold);background:var(--bg3)}
+.ppf-table tr:hover td{background:var(--bg3)}
+.ppf-table tr:last-child:hover td{background:var(--bg3)}
+.ppf-sum-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ppf-sum-row:last-child{border-bottom:none}
+.ppf-sum-row .sk{color:var(--text2)}
+.ppf-sum-row .sv{font-weight:700;font-family:-apple-system,Arial,sans-serif}
+.ppf-sum-row.ppf-hl{background:var(--bg3);margin:0 -12px;padding:10px 12px;border-radius:var(--r2);border-bottom:none;margin-bottom:4px}
+.ppf-sum-row.ppf-hl .sv{color:var(--gold);font-size:16px}
+
+.chart-wrap{position:relative;width:100%;height:220px;margin-top:12px}
+
+.section-title{font-family:-apple-system,Arial,sans-serif;font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text)}
+
+/* Light theme overrides for inputs */
+[data-theme="light"] input,[data-theme="light"] select{background:var(--bg3);border-color:var(--border);color:var(--text)}
+[data-theme="light"] select option{background:#fff;color:var(--text)}
+[data-theme="light"] .expense-item{background:var(--bg3);border-color:var(--border)}
+[data-theme="light"] .exp-cat{background:var(--bg2)}
+[data-theme="light"] #r-advice{background:var(--bg3)}
+[data-theme="light"] .regime-btn{background:var(--bg3);border-color:var(--border)}
+[data-theme="light"] .progress-bar{background:var(--bg3)}
+
+/* PRINT STYLES — A4 layout with proper header/footer */
+@media print {
+  /* ---- Hide everything except report content ---- */
+  #splash, .topbar, .modal-overlay, .nav, .header,
+  .card:not(#report-content), .top-bar, #tab-expenses,
+  #tab-tax, #tab-ppf { display: none !important; }
+
+  /* ---- Page setup ---- */
+  @page {
+    size: A4;
+    margin: 18mm 16mm 22mm 16mm;
+  }
+
+  /* ---- Base: consistent font across entire print ---- */
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 12px !important;
+    font-family:-apple-system,Arial,sans-serif !important;
+    font-weight: 400 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ---- Force DM Sans everywhere in report — no Syne ---- */
+  #report-content, #report-content * {
+    font-family:-apple-system,Arial,sans-serif !important;
+  }
+
+  .app {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* ---- Show only report tab ---- */
+  .tab { display: none !important; }
+  #tab-report { display: block !important; }
+
+  /* ---- Report card becomes the page ---- */
+  #report-content {
+    display: block !important;
+    background: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* ---- Running header ---- */
+  #report-content::before {
+    content: "TaxEase India  |  FY 2025-26  |  AY 2026-27";
+    display: block;
+    font-size: 9px;
+    font-weight: 400 !important;
+    color: #999;
+    text-align: right;
+    border-bottom: 0.5px solid #ddd;
+    padding-bottom: 5px;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ---- Running footer ---- */
+  #report-content::after {
+    content: "This report is generated by TaxEase India. For informational purposes only. Please consult a Chartered Accountant for official tax filing.";
+    display: block;
+    font-size: 9px;
+    font-weight: 400 !important;
+    color: #aaa;
+    text-align: center;
+    border-top: 0.5px solid #ddd;
+    padding-top: 6px;
+    margin-top: 20px;
+  }
+
+  /* ---- Report logo & header ---- */
+  #report-content > div:first-of-type { text-align: center; }
+
+  /* ---- Section banners (Tax / PPF headings) ---- */
+  #rep-tax-section > div:first-child,
+  #rep-ppf-section > div:first-child {
+    background: #fff8e6 !important;
+    color: #b07800 !important;
+    border-left-color: #f0a500 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 7px 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* ---- Section headers (h3) ---- */
+  .report-section { margin-bottom: 14px !important; break-inside: avoid; }
+  .report-section h3 {
+    color: #555 !important;
+    border-color: #ccc !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    padding-bottom: 4px !important;
+    margin-bottom: 8px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.6px !important;
+  }
+
+  /* ---- Grid: stack for print ---- */
+  .grid2 { display: block !important; }
+
+  /* ---- Report rows — uniform weight ---- */
+  .report-row {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    padding: 5px 0 !important;
+    border-color: #eee !important;
+  }
+  .report-row .rkey {
+    color: #555 !important;
+    font-weight: 400 !important;
+  }
+  .report-row .rval {
+    color: #111 !important;
+    font-weight: 600 !important;
+  }
+  .report-row.highlight {
+    background: #fff8e6 !important;
+    margin: 2px -4px !important;
+    padding: 7px 4px !important;
+    border-bottom: none !important;
+  }
+  .report-row.highlight .rkey {
+    color: #7a5200 !important;
+    font-weight: 600 !important;
+  }
+  .report-row.highlight .rval {
+    color: #b07800 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+  }
+
+  /* ---- PPF table ---- */
+  .ppf-table {
+    font-size: 11px !important;
+    min-width: unset !important;
+    width: 100% !important;
+    font-weight: 400 !important;
+  }
+  .ppf-table th {
+    padding: 5px 8px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #555 !important;
+    border-color: #ccc !important;
+  }
+  .ppf-table td {
+    padding: 5px 8px !important;
+    color: #111 !important;
+    font-weight: 400 !important;
+    border-color: #eee !important;
+  }
+  .ppf-table td:first-child {
+    color: #111 !important;
+    font-weight: 600 !important;
+  }
+  .ppf-table tr:last-child td {
+    background: #fff8e6 !important;
+    color: #b07800 !important;
+    font-weight: 700 !important;
+  }
+  .ppf-table tr:hover td { background: transparent !important; }
+
+  /* ---- PPF summary rows ---- */
+  .ppf-sum-row {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    padding: 5px 0 !important;
+  }
+  .ppf-sum-row .sk {
+    color: #555 !important;
+    font-weight: 400 !important;
+  }
+  .ppf-sum-row .sv {
+    color: #111 !important;
+    font-weight: 600 !important;
+  }
+  .ppf-sum-row.ppf-hl { background: #fff8e6 !important; }
+  .ppf-sum-row.ppf-hl .sk { color: #7a5200 !important; font-weight: 600 !important; }
+  .ppf-sum-row.ppf-hl .sv { color: #b07800 !important; font-weight: 700 !important; }
+
+  /* ---- Recommendation box ---- */
+  #rep-recommendation div {
+    background: #fff8e6 !important;
+    border-color: #e0c060 !important;
+    font-weight: 400 !important;
+  }
+  #rep-recommendation strong { font-weight: 700 !important; color: #b07800 !important; }
+
+  /* ---- Profile info ---- */
+  #rep-profile-info {
+    color: #333 !important;
+    font-weight: 400 !important;
+    background: #f9f6ed !important;
+    border-radius: 4px !important;
+  }
+  #rep-profile-info strong { font-weight: 700 !important; }
+
+  /* ---- Header text ---- */
+  #rep-header-label { color: #666 !important; font-weight: 400 !important; }
+  #rep-generated-on { color: #888 !important; font-weight: 400 !important; }
+
+  /* ---- Divider ---- */
+  #rep-divider { background: #ddd !important; }
+
+  /* ---- Hide all charts ---- */
+  .chart-wrap { display: none !important; }
+  canvas { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="sp-logo">TaxEase India</div>
+  <div class="sp-sub">Smart Tax, Expense & Investment Management</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-box">
+    <h2>👤 Your Profile</h2>
+    <p>Your details appear on the Tax Report and are saved locally.</p>
+    <div class="modal-field"><label>Full Name</label><input id="p-name" placeholder="e.g. Rahul Sharma"/></div>
+    <div class="modal-field"><label>Email Address</label><input id="p-email" type="email" placeholder="e.g. rahul@example.com"/></div>
+    <div class="modal-field"><label>Phone Number</label><input id="p-phone" type="tel" placeholder="e.g. 9876543210" maxlength="10"/></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeProfile()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">☀ Light Mode</button>
+    <button class="profile-btn" id="profileBtn" onclick="openProfile()">👤 Set Profile</button>
+  </div>
+  <div class="header">
+    <h1>TaxEase India</h1>
+    <p>Smart Tax, Expense & Investment Management for Indian Taxpayers</p>
+    <span class="badge">FY 2025–26 · AY 2026–27</span>
+  </div>
+
+  <div class="nav">
+    <button class="active" onclick="showTab('expenses', this)">Expenses</button>
+    <button onclick="showTab('tax', this)">Tax Calculator</button>
+    <button onclick="showTab('ppf', this)">PPF Calculator</button>
+    <button onclick="showTab('report', this)">Reports</button>
+  </div>
+
+  <!-- ==================== EXPENSES TAB ==================== -->
+  <div class="tab active" id="tab-expenses">
+    <div class="grid4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="label">Total Expenses</div><div class="value gold" id="s-total">₹0</div></div>
+      <div class="stat-card"><div class="label">This Month</div><div class="value blue" id="s-month">₹0</div></div>
+      <div class="stat-card"><div class="label">Entries</div><div class="value" id="s-count">0</div></div>
+      <div class="stat-card"><div class="label">Top Category</div><div class="value green" id="s-top">—</div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Add Expense</div>
+      <div class="expense-form">
+        <div><label>Description</label><input id="exp-desc" placeholder="e.g. Grocery shopping" /></div>
+        <div><label>Amount (₹)</label><input id="exp-amt" type="number" placeholder="0" min="0" /></div>
+        <div>
+          <label>Category</label>
+          <select id="exp-cat">
+            <option value="food">Food</option>
+            <option value="transport">Transport</option>
+            <option value="utilities">Utilities</option>
+            <option value="health">Health</option>
+            <option value="education">Education</option>
+            <option value="entertainment">Entertainment</option>
+            <option value="house">Housing/Rent</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div><label>&nbsp;</label><button class="btn btn-gold" onclick="addExpense()">+ Add</button></div>
+      </div>
+      <div class="divider"></div>
+      <div id="expense-list" class="expense-list">
+        <div class="empty-state">No expenses yet. Add your first expense above.</div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:16px">
+      <div class="card">
+        <div class="section-title" style="font-size:14px">By Category</div>
+        <div id="cat-breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="font-size:14px">Expense Chart</div>
+        <div class="chart-wrap"><canvas id="expChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAX CALCULATOR TAB ==================== -->
+  <div class="tab" id="tab-tax">
+    <div class="grid2">
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title">Income Details</div>
+          <div class="tax-field"><label>Annual Gross Income (₹)</label><input id="t-income" type="number" value="800000" oninput="calcTax()" /></div>
+          <div class="tax-field"><label>Basic Salary (₹) <span style="color:var(--text3)">(for HRA)</span></label><input id="t-basic" type="number" value="400000" oninput="calcTax()" /></div>
+          <div class="tax-field"><label>HRA Received (₹)</label><input id="t-hra" type="number" value="120000" oninput="calcTax()" /></div>
+          <div class="tax-field"><label>Rent Paid Annually (₹)</label><input id="t-rent" type="number" value="180000" oninput="calcTax()" /></div>
+          <div class="tax-field">
+            <label>City Type</label>
+            <select id="t-city" onchange="calcTax()">
+              <option value="metro">Metro City (50% HRA Exempt)</option>
+              <option value="non-metro">Non-Metro City (40% HRA Exempt)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Deductions (Old Regime)</div>
+          <div class="tax-field"><label>Section 80C — PF, PPF, ELSS, LIC, etc. (max ₹1,50,000)</label><input id="t-80c" type="number" value="150000" oninput="calcTax()" /></div>
+          <div class="tax-field"><label>Section 80D — Medical Insurance (max ₹25,000)</label><input id="t-80d" type="number" value="25000" oninput="calcTax()" /></div>
+          <div class="tax-field"><label>Other Deductions (NPS, home loan, etc.)</label><input id="t-other" type="number" value="50000" oninput="calcTax()" /></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title">Choose Tax Regime</div>
+          <div class="regime-toggle">
+            <div class="regime-btn active" id="rBtn-new" onclick="setRegime('new')">New Regime</div>
+            <div class="regime-btn" id="rBtn-old" onclick="setRegime('old')">Old Regime</div>
+          </div>
+          <div class="grid2" style="margin-bottom:16px">
+            <div class="stat-card"><div class="label">Taxable Income</div><div class="value" id="r-taxable">₹0</div></div>
+            <div class="stat-card"><div class="label">Tax Payable</div><div class="value coral" id="r-tax">₹0</div></div>
+            <div class="stat-card"><div class="label">Cess (4%)</div><div class="value" id="r-cess">₹0</div></div>
+            <div class="stat-card"><div class="label">Net Tax</div><div class="value gold" id="r-net">₹0</div></div>
+          </div>
+          <div id="r-advice" style="padding:12px;background:var(--bg3);border-radius:var(--r2);font-size:13px;color:var(--text2);border-left:3px solid var(--gold)"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title" style="font-size:14px">Tax Slabs — <span id="slab-regime-label">New Regime</span></div>
+          <table class="slab-table">
+            <thead><tr><th>Income Range</th><th>Rate</th><th>Tax</th></tr></thead>
+            <tbody id="slab-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-title">Regime Comparison</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="compareChart"></canvas></div>
+    </div>
+
+    <!-- TAX SAVING SUGGESTIONS -->
+    <div class="card" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div class="section-title" style="margin:0">💡 Tax Saving Suggestions</div>
+        <div style="font-size:11px;color:var(--text3);background:var(--bg3);padding:4px 10px;border-radius:20px">Based on your current inputs</div>
+      </div>
+      <div id="tax-suggestions">
+        <div class="sug-empty">Enter your income details above to see personalised tax saving suggestions.</div>
+      </div>
+      <div id="sug-total-saving" style="display:none">
+        <span>Total Potential Tax Saving</span>
+        <span id="sug-total-amt"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REPORT TAB ==================== -->
+  <div class="tab" id="tab-report">
+
+    <!-- Report Selector Card -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="section-title">📄 Generate Your Report</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Select which reports you want to include and click Generate.</p>
+
+      <div class="rep-option-grid">
+
+        <!-- Option 1: Tax Report -->
+        <label class="rep-option" id="opt-tax-label">
+          <input type="checkbox" id="chk-tax" checked onchange="toggleRepOption('tax')"/>
+          <div class="rep-option-box" id="opt-tax-box">
+            <div class="rep-option-icon" style="background:rgba(240,165,0,0.12);color:var(--gold)">₹</div>
+            <div>
+              <div class="rep-option-title">Tax Computation Report</div>
+              <div class="rep-option-desc">Income summary, deductions, tax payable, regime recommendation and expense breakdown.</div>
+            </div>
+            <div class="rep-option-check" id="opt-tax-check">✓</div>
+          </div>
+        </label>
+
+        <!-- Option 2: PPF Report -->
+        <label class="rep-option" id="opt-ppf-label">
+          <input type="checkbox" id="chk-ppf" checked onchange="toggleRepOption('ppf')"/>
+          <div class="rep-option-box" id="opt-ppf-box">
+            <div class="rep-option-icon" style="background:rgba(79,142,247,0.12);color:var(--blue)">P</div>
+            <div>
+              <div class="rep-option-title">PPF Investment Report</div>
+              <div class="rep-option-desc">Investment summary, maturity amount, total interest earned and year by year breakdown table.</div>
+            </div>
+            <div class="rep-option-check" id="opt-ppf-check">✓</div>
+          </div>
+        </label>
+
+      </div>
+
+      <div id="rep-warning" style="display:none;margin-top:14px;padding:10px 14px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:var(--r2);font-size:13px;color:var(--coral)">
+        Please select at least one report to generate.
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="generateReport()">Generate Report</button>
+        <button class="btn btn-outline" onclick="window.print()">Print Report</button>
+      </div>
+    </div>
+
+    <!-- Generated Report Output -->
+    <div class="print-area" id="report-content" style="display:none">
+
+      <!-- Report Header -->
+      <div style="text-align:center;padding:20px 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px">
+        <div style="font-family:-apple-system,Arial,sans-serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:-0.5px">TaxEase India</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:1px" id="rep-header-label">Financial Report · FY 2025–26 · AY 2026–27</div>
+        <div id="rep-profile-info" style="margin-top:10px;font-size:13px;color:var(--text);padding:8px 16px;background:var(--bg3);border-radius:var(--r2);display:inline-block"></div>
+      </div>
+
+      <!-- TAX REPORT SECTION -->
+      <div id="rep-tax-section">
+        <div style="font-family:-apple-system,Arial,sans-serif;font-size:16px;font-weight:700;color:var(--gold);margin-bottom:16px;padding:10px 14px;background:rgba(240,165,0,0.08);border-radius:var(--r2);border-left:3px solid var(--gold)">Tax Computation Report</div>
+        <div class="grid2" style="margin-bottom:8px">
+          <div class="report-section"><h3>Income Summary</h3><div id="rep-income"></div></div>
+          <div class="report-section"><h3>Deductions Applied</h3><div id="rep-deductions"></div></div>
+        </div>
+        <div class="report-section"><h3>Tax Computation</h3><div id="rep-tax"></div></div>
+        <div class="report-section"><h3>Expense Summary</h3><div id="rep-expenses"></div></div>
+        <div class="report-section"><h3>Regime Recommendation</h3><div id="rep-recommendation"></div></div>
+      </div>
+
+      <!-- DIVIDER between sections -->
+      <div id="rep-divider" style="height:1px;background:var(--border);margin:28px 0;display:none"></div>
+
+      <!-- PPF REPORT SECTION -->
+      <div id="rep-ppf-section">
+        <div style="font-family:-apple-system,Arial,sans-serif;font-size:16px;font-weight:700;color:var(--blue);margin-bottom:16px;padding:10px 14px;background:rgba(79,142,247,0.08);border-radius:var(--r2);border-left:3px solid var(--blue)">PPF Investment Report</div>
+        <div class="grid2" style="margin-bottom:16px">
+          <div class="report-section"><h3>PPF Summary</h3><div id="rep-ppf-summary"></div></div>
+          <div class="report-section"><h3>Key Highlights</h3><div id="rep-ppf-highlights"></div></div>
+        </div>
+        <div class="report-section">
+          <h3>Year by Year Breakdown</h3>
+          <div style="overflow-x:auto"><table class="ppf-table" id="rep-ppf-table"><thead><tr><th>Year</th><th>Opening Balance</th><th>Amount Deposited</th><th>Interest Earned</th><th>Closing Balance</th></tr></thead><tbody id="rep-ppf-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- Print footer -->
+      <div style="margin-top:24px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text3)">
+        <span>Generated by TaxEase India</span>
+        <span id="rep-generated-on"></span>
+      </div>
+
+    </div>
+  </div><!-- /tab-report -->
+
+  <!-- ==================== PPF CALCULATOR TAB ==================== -->
+  <div class="tab" id="tab-ppf">
+
+    <div class="grid4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="label">Maturity Amount</div><div class="value gold" id="ppf-maturity">₹0</div></div>
+      <div class="stat-card"><div class="label">Total Invested</div><div class="value blue" id="ppf-invested">₹0</div></div>
+      <div class="stat-card"><div class="label">Interest Earned</div><div class="value green" id="ppf-interest">₹0</div></div>
+      <div class="stat-card"><div class="label">Tax Saved (80C)</div><div class="value coral" id="ppf-taxsaved">₹0</div></div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title">PPF Investment Details</div>
+          <div class="tax-field">
+            <label>Yearly Investment Amount (₹)</label>
+            <input id="ppf-yearly" type="number" value="150000" min="500" max="150000" oninput="calcPPF()"/>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Min ₹500 · Max ₹1,50,000 per year</div>
+          </div>
+          <div class="tax-field">
+            <label>Annual Interest Rate (%)</label>
+            <input id="ppf-rate" type="number" value="7.1" step="0.1" min="1" max="15" oninput="calcPPF()"/>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Current govt rate: 7.1% p.a. (compounded yearly)</div>
+          </div>
+          <div class="tax-field">
+            <label>Investment Period (Years)</label>
+            <input id="ppf-years" type="number" value="15" min="15" max="50" oninput="calcPPF()"/>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Minimum 15 years · Can extend in blocks of 5</div>
+          </div>
+          <div class="tax-field">
+            <label>Your Income Tax Slab (%)</label>
+            <select id="ppf-slab" onchange="calcPPF()">
+              <option value="0">0% (No Tax)</option>
+              <option value="5">5% Slab</option>
+              <option value="10">10% Slab</option>
+              <option value="15">15% Slab</option>
+              <option value="20" selected>20% Slab</option>
+              <option value="30">30% Slab</option>
+            </select>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Used to calculate your annual 80C tax saving</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="font-size:14px">Key PPF Facts</div>
+          <div class="ppf-fact"><span class="ppf-fact-dot" style="background:var(--gold)"></span><div><strong>Tax Free (EEE Category)</strong> — Investment, interest earned, and maturity amount are all 100% tax free. No tax at any stage.</div></div>
+          <div class="ppf-fact"><span class="ppf-fact-dot" style="background:var(--green)"></span><div><strong>Government Backed</strong> — Completely safe investment, fully guaranteed by the Government of India. Zero risk of loss.</div></div>
+          <div class="ppf-fact"><span class="ppf-fact-dot" style="background:var(--blue)"></span><div><strong>Lock-in Period: 15 Years</strong> — Premature closure not allowed. Partial withdrawal permitted from Year 7 onwards once per year.</div></div>
+          <div class="ppf-fact"><span class="ppf-fact-dot" style="background:var(--coral)"></span><div><strong>Section 80C Deduction</strong> — PPF investment qualifies for tax deduction up to ₹1,50,000 per financial year under Section 80C.</div></div>
+          <div class="ppf-fact"><span class="ppf-fact-dot" style="background:var(--teal)"></span><div><strong>Loan Facility</strong> — You can avail a loan against your PPF account balance from the beginning of Year 3 up to the end of Year 6.</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title" style="font-size:14px">Investment Summary</div>
+          <div id="ppf-summary"></div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="font-size:14px">Balance vs Investment Growth</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px;margin-top:-10px">Gold line = Total PPF balance &nbsp;|&nbsp; Blue line = Amount you deposited</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ppfChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div class="section-title" style="margin:0">Year by Year Breakdown</div>
+        <div id="ppf-table-label" style="font-size:11px;color:var(--text3);background:var(--bg3);padding:4px 10px;border-radius:20px">15 Year Growth Table</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="ppf-table">
+          <thead><tr><th>Year</th><th>Opening Balance</th><th>Amount Deposited</th><th>Interest Earned</th><th>Closing Balance</th></tr></thead>
+          <tbody id="ppf-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /tab-ppf -->
+
+</div>
+
+<!-- ==================== CHART.JS ==================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<script>
+/* ===================== STATE ===================== */
+var expenses = [];
+var regime = 'new';
+var catColors = {
+  food: '#51cf66', transport: '#f0a500', utilities: '#fd7014',
+  health: '#ff6b6b', education: '#2ec4b6', entertainment: '#c77dff',
+  house: '#4f8ef7', other: '#9ba3bf'
+};
+
+/* ===================== UTILS ===================== */
+function fmt(n) {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+/* ===================== NAVIGATION ===================== */
+
+/* ===================== REGIME ===================== */
+function setRegime(r) {
+  regime = r;
+  document.getElementById('rBtn-new').classList.toggle('active', r === 'new');
+  document.getElementById('rBtn-old').classList.toggle('active', r === 'old');
+  document.getElementById('slab-regime-label').textContent = r === 'new' ? 'New Regime' : 'Old Regime';
+  calcTax();
+}
+
+/* ===================== EXPENSES ===================== */
+function addExpense() {
+  var d = document.getElementById('exp-desc').value.trim();
+  var a = parseFloat(document.getElementById('exp-amt').value);
+  var c = document.getElementById('exp-cat').value;
+  if (!d || !a || a <= 0) { alert('Please enter a description and valid amount.'); return; }
+  expenses.push({ id: Date.now(), desc: d, amt: a, cat: c, date: new Date().toLocaleDateString('en-IN') });
+  document.getElementById('exp-desc').value = '';
+  document.getElementById('exp-amt').value = '';
+  renderExpenses();
+}
+
+function delExpense(id) {
+  expenses = expenses.filter(e => e.id !== id);
+  renderExpenses();
+}
+
+function renderExpenses() {
+  var list = document.getElementById('expense-list');
+  if (!expenses.length) {
+    list.innerHTML = '<div class="empty-state">No expenses yet. Add your first expense above.</div>';
+    updateStats(); renderCatBreakdown(); return;
+  }
+  list.innerHTML = expenses.map(e => `
+    <div class="expense-item">
+      <span class="exp-dot" style="background:${catColors[e.cat]}"></span>
+      <span class="exp-name">${e.desc}</span>
+      <span class="exp-cat">${e.cat.charAt(0).toUpperCase()+e.cat.slice(1)}</span>
+      <span style="font-size:11px;color:var(--text3);margin-left:auto">${e.date}</span>
+      <span class="exp-amt">${fmt(e.amt)}</span>
+      <button class="btn btn-danger" onclick="delExpense(${e.id})">✕</button>
+    </div>`).join('');
+  updateStats();
+  renderCatBreakdown();
+  renderExpChart();
+}
+
+function updateStats() {
+  var total = expenses.reduce((s, e) => s + e.amt, 0);
+  document.getElementById('s-total').textContent = fmt(total);
+  document.getElementById('s-count').textContent = expenses.length;
+  document.getElementById('s-month').textContent = fmt(total);
+  if (expenses.length) {
+    var cats = {};
+    expenses.forEach(e => cats[e.cat] = (cats[e.cat] || 0) + e.amt);
+    var top = Object.entries(cats).sort((a, b) => b[1] - a[1])[0];
+    document.getElementById('s-top').textContent = top[0].charAt(0).toUpperCase() + top[0].slice(1);
+  } else {
+    document.getElementById('s-top').textContent = '—';
+  }
+}
+
+function renderCatBreakdown() {
+  var el = document.getElementById('cat-breakdown');
+  if (!expenses.length) { el.innerHTML = '<div class="empty-state">Add expenses to see breakdown.</div>'; return; }
+  var cats = {};
+  var total = expenses.reduce((s, e) => s + e.amt, 0);
+  expenses.forEach(e => cats[e.cat] = (cats[e.cat] || 0) + e.amt);
+  el.innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span style="display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${catColors[cat]};display:inline-block"></span>${cat.charAt(0).toUpperCase()+cat.slice(1)}
+        </span>
+        <span style="color:var(--gold)">${fmt(amt)} <span style="color:var(--text3)">(${Math.round(amt / total * 100)}%)</span></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${amt / total * 100}%;background:${catColors[cat]}"></div>
+      </div>
+    </div>`).join('');
+}
+
+var expChartInst = null;
+function renderExpChart() {
+  var cats = {};
+  expenses.forEach(e => cats[e.cat] = (cats[e.cat] || 0) + e.amt);
+  var labels = Object.keys(cats);
+  var data = Object.values(cats);
+  var colors = labels.map(c => catColors[c]);
+  var ctx = document.getElementById('expChart').getContext('2d');
+  if (expChartInst) expChartInst.destroy();
+  expChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: labels.map(l => l.charAt(0).toUpperCase()+l.slice(1)), datasets: [{ data, backgroundColor: colors, borderWidth: 1, borderColor: '#1e2130' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: 'bottom', labels: { color: '#9ba3bf', font: { size: 11 }, boxWidth: 10, padding: 10 } } }
+    }
+  });
+}
+
+/* ===================== TAX ENGINE ===================== */
+function calcTaxNew(income) {
+  var std = 75000;
+  var taxable = Math.max(0, income - std);
+  var slabs = [
+    { min: 0,        max: 400000,   rate: 0.00 },
+    { min: 400000,   max: 800000,   rate: 0.05 },
+    { min: 800000,   max: 1200000,  rate: 0.10 },
+    { min: 1200000,  max: 1600000,  rate: 0.15 },
+    { min: 1600000,  max: 2000000,  rate: 0.20 },
+    { min: 2000000,  max: 2400000,  rate: 0.25 },
+    { min: 2400000,  max: Infinity, rate: 0.30 }
+  ];
+  var tax = 0;
+  var breakdown = [];
+  slabs.forEach(s => {
+    if (taxable > s.min) {
+      var chunk = Math.min(taxable, s.max === Infinity ? taxable : s.max) - s.min;
+      var t = chunk * s.rate;
+      tax += t;
+      breakdown.push({
+        range: s.max === Infinity ? `Above ₹${(s.min / 100000).toFixed(0)}L` : `₹${(s.min / 100000).toFixed(0)}L – ₹${(s.max / 100000).toFixed(0)}L`,
+        rate: (s.rate * 100) + '%', tax: t
+      });
+    }
+  });
+  /* Rebate u/s 87A: taxable income ≤ ₹12L → full rebate up to ₹60,000 */
+  var rebate = taxable <= 1200000 ? Math.min(tax, 60000) : 0;
+  tax = Math.max(0, tax - rebate);
+  return { taxable, tax, breakdown, std, rebate };
+}
+
+function calcTaxOld(income) {
+  var std = 50000;
+  var c80c  = Math.min(parseFloat(document.getElementById('t-80c').value)  || 0, 150000);
+  var c80d  = Math.min(parseFloat(document.getElementById('t-80d').value)  || 0, 25000);
+  var other = parseFloat(document.getElementById('t-other').value) || 0;
+  var basic = parseFloat(document.getElementById('t-basic').value) || 0;
+  var hraRecv = parseFloat(document.getElementById('t-hra').value)  || 0;
+  var rent    = parseFloat(document.getElementById('t-rent').value) || 0;
+  var isMetro = document.getElementById('t-city').value === 'metro';
+  var hraExempt = Math.min(hraRecv, rent - (0.1 * basic), (isMetro ? 0.5 : 0.4) * basic);
+  hraExempt = Math.max(0, hraExempt);
+  var totalDed = std + c80c + c80d + other + hraExempt;
+  var taxable = Math.max(0, income - totalDed);
+  var slabs = [
+    { min: 0,       max: 250000,   rate: 0.00 },
+    { min: 250000,  max: 500000,   rate: 0.05 },
+    { min: 500000,  max: 1000000,  rate: 0.20 },
+    { min: 1000000, max: Infinity, rate: 0.30 }
+  ];
+  var tax = 0;
+  var breakdown = [];
+  slabs.forEach(s => {
+    if (taxable > s.min) {
+      var chunk = Math.min(taxable, s.max === Infinity ? taxable : s.max) - s.min;
+      var t = chunk * s.rate;
+      tax += t;
+      breakdown.push({
+        range: s.max === Infinity ? `Above ₹${(s.min / 100000).toFixed(0)}L` : `₹${(s.min / 100000).toFixed(0)}L – ₹${(s.max / 100000).toFixed(0)}L`,
+        rate: (s.rate * 100) + '%', tax: t
+      });
+    }
+  });
+  var rebate = taxable <= 500000 ? Math.min(tax, 12500) : 0;
+  tax = Math.max(0, tax - rebate);
+  return { taxable, tax, breakdown, std, c80c, c80d, hraExempt, other, totalDed, rebate };
+}
+
+/* ===================== COMPARISON CHART ===================== */
+var compareChartInst = null;
+function renderCompareChart() {
+  var income = parseFloat(document.getElementById('t-income').value) || 0;
+  var newR = calcTaxNew(income);
+  var oldR = calcTaxOld(income);
+  var newNet = newR.tax * 1.04;
+  var oldNet = oldR.tax * 1.04;
+  var ctx = document.getElementById('compareChart').getContext('2d');
+  if (compareChartInst) compareChartInst.destroy();
+  compareChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['New Regime', 'Old Regime'],
+      datasets: [
+        { label: 'Tax', data: [Math.round(newR.tax), Math.round(oldR.tax)], backgroundColor: '#ff6b6b88', borderColor: '#ff6b6b', borderWidth: 1, borderRadius: 6 },
+        { label: 'Net Tax (with Cess)', data: [Math.round(newNet), Math.round(oldNet)], backgroundColor: '#f0a50088', borderColor: '#f0a500', borderWidth: 1, borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#9ba3bf', font: { size: 11 }, boxWidth: 10 } } },
+      scales: {
+        x: { ticks: { color: '#9ba3bf' }, grid: { color: '#2a2f45' } },
+        y: { ticks: { color: '#9ba3bf', callback: v => fmt(v) }, grid: { color: '#2a2f45' } }
+      }
+    }
+  });
+}
+
+/* ===================== MAIN CALC ===================== */
+function calcTax() {
+  var income = parseFloat(document.getElementById('t-income').value) || 0;
+  var res = regime === 'new' ? calcTaxNew(income) : calcTaxOld(income);
+  var cess = res.tax * 0.04;
+  var net = res.tax + cess;
+  document.getElementById('r-taxable').textContent = fmt(res.taxable);
+  document.getElementById('r-tax').textContent     = fmt(res.tax);
+  document.getElementById('r-cess').textContent    = fmt(cess);
+  document.getElementById('r-net').textContent     = fmt(net);
+
+  var newR  = calcTaxNew(income);
+  var oldR  = calcTaxOld(income);
+  var newNet = newR.tax * 1.04;
+  var oldNet = oldR.tax * 1.04;
+  var save   = Math.abs(newNet - oldNet);
+  var better = newNet <= oldNet ? 'New Regime' : 'Old Regime';
+  document.getElementById('r-advice').innerHTML =
+    `<b style="color:var(--gold)">${better}</b> is better for you — saves you <b style="color:var(--green)">${fmt(save)}</b> in taxes.` +
+    (res.rebate > 0 ? ' <span class="tag tag-green">Rebate u/s 87A applied</span>' : '');
+
+  var tbody = document.getElementById('slab-tbody');
+  tbody.innerHTML = res.breakdown.map(s =>
+    `<tr><td>${s.range}</td><td class="rate" style="color:${s.rate === '0%' ? 'var(--green)' : 'var(--coral)'}">${s.rate}</td><td>${fmt(s.tax)}</td></tr>`
+  ).join('');
+  renderCompareChart();
+  renderTaxSuggestions();
+}
+
+/* ===================== TAX SAVING SUGGESTIONS ===================== */
+function renderTaxSuggestions() {
+  var income  = parseFloat(document.getElementById('t-income').value) || 0;
+  var c80c    = parseFloat(document.getElementById('t-80c').value)    || 0;
+  var c80d    = parseFloat(document.getElementById('t-80d').value)    || 0;
+  var other   = parseFloat(document.getElementById('t-other').value)  || 0;
+  var el      = document.getElementById('tax-suggestions');
+
+  if (!income) {
+    el.innerHTML = '<div class="sug-empty">Enter your income details above to see personalised tax saving suggestions.</div>';
+    var tb = document.getElementById('sug-total-saving');
+    if (tb) tb.style.display = 'none';
+    return;
+  }
+
+  /* Only relevant for Old Regime — New Regime has no deductions */
+  if (regime === 'new') {
+    el.innerHTML = `
+      <div class="suggestion-card">
+        <div class="sug-icon blue">💡</div>
+        <div>
+          <div class="sug-title">Switch to Old Regime to unlock deductions</div>
+          <div class="sug-desc">New Regime has lower slab rates but zero deductions. If you have investments in PPF, LIC, ELSS or pay rent, Old Regime might save you more. Switch above to see your saving opportunities.</div>
+        </div>
+      </div>`;
+    var tb2 = document.getElementById('sug-total-saving');
+    if (tb2) tb2.style.display = 'none';
+    return;
+  }
+
+  var suggestions = [];
+  var totalSaving = 0;
+
+  /* Helper: tax saving from reducing taxable income by an amount */
+  function taxSavingFor(extraDeduction) {
+    var oldTax = calcTaxOld(income).tax * 1.04;
+    /* Temporarily boost 80C for calculation */
+    var saved80c = document.getElementById('t-80c').value;
+    document.getElementById('t-80c').value = Math.min(c80c + extraDeduction, 150000);
+    var newTax = calcTaxOld(income).tax * 1.04;
+    document.getElementById('t-80c').value = saved80c;
+    return Math.max(0, oldTax - newTax);
+  }
+
+  /* 1. Section 80C gap */
+  var gap80c = 150000 - Math.min(c80c, 150000);
+  if (gap80c >= 5000) {
+    var saving80c = Math.round(gap80c * 0.20 * 1.04); /* approx 20% bracket + cess */
+    totalSaving += saving80c;
+    suggestions.push({
+      icon: '📦', color: 'green',
+      title: `Invest ₹${Math.round(gap80c/1000)}K more in Section 80C`,
+      desc:  `You have used ${fmt(Math.min(c80c,150000))} out of ₹1,50,000 limit. Invest the remaining ${fmt(gap80c)} in PPF, ELSS, LIC, NSC or Employee PF to fully utilise this deduction.`,
+      saving: saving80c
+    });
+  }
+
+  /* 2. Section 80D gap */
+  var gap80d = 25000 - Math.min(c80d, 25000);
+  if (gap80d >= 1000) {
+    var saving80d = Math.round(gap80d * 0.20 * 1.04);
+    totalSaving += saving80d;
+    suggestions.push({
+      icon: '🏥', color: 'coral',
+      title: `Get health insurance to save under Section 80D`,
+      desc:  `You can claim up to ₹25,000 for health insurance premium for self and family. You have ${fmt(gap80d)} of unused 80D limit. Senior citizen parents can give an additional ₹50,000 deduction.`,
+      saving: saving80d
+    });
+  }
+
+  /* 3. NPS 80CCD(1B) — extra ₹50,000 over 80C */
+  var npsUsed = Math.max(0, other - 50000);
+  if (npsUsed < 50000) {
+    var npsGap    = 50000 - npsUsed;
+    var savingNPS = Math.round(npsGap * 0.20 * 1.04);
+    totalSaving += savingNPS;
+    suggestions.push({
+      icon: '🏦', color: 'blue',
+      title: 'Invest in NPS for extra ₹50,000 deduction — Section 80CCD(1B)',
+      desc:  'National Pension Scheme gives an EXTRA ₹50,000 deduction over and above the ₹1,50,000 Section 80C limit. This is one of the best tax saving instruments for salaried employees.',
+      saving: savingNPS
+    });
+  }
+
+  /* 4. HRA — if not claiming */
+  var hraRecv = parseFloat(document.getElementById('t-hra').value) || 0;
+  var rent    = parseFloat(document.getElementById('t-rent').value) || 0;
+  if (hraRecv > 0 && rent === 0) {
+    suggestions.push({
+      icon: '🏠', color: 'gold',
+      title: `Claim HRA exemption by submitting rent receipts`,
+      desc:  `You receive HRA of ${fmt(hraRecv)} but have not entered rent paid. If you live in a rented house, enter your annual rent to automatically calculate HRA exemption and reduce your taxable income.`,
+      saving: 0
+    });
+  }
+
+  /* 5. Home Loan Interest u/s 24B */
+  if (income > 500000) {
+    suggestions.push({
+      icon: '🏡', color: 'blue',
+      title: `Home Loan interest can save up to ₹2,00,000 (Section 24B)`,
+      desc:  `If you have a home loan, the interest paid is deductible up to ₹2,00,000 per year under Section 24B. This is separate from 80C and can significantly reduce your taxable income.`,
+      saving: 0
+    });
+  }
+
+  /* 6. Rebate opportunity — close to ₹5L threshold */
+  var oldRes = calcTaxOld(income);
+  if (oldRes.taxable > 500000 && oldRes.taxable <= 520000) {
+    var gapToRebate = oldRes.taxable - 500000;
+    suggestions.push({
+      icon: '🎯', color: 'gold',
+      title: `You are just ${fmt(gapToRebate)} away from ZERO tax!`,
+      desc:  `If your taxable income comes down to ₹5,00,000 or below, you get a full rebate u/s 87A and pay ZERO tax. Invest just ${fmt(gapToRebate)} more in any 80C instrument to reach this threshold.`,
+      saving: Math.round(oldRes.tax * 1.04)
+    });
+    totalSaving += Math.round(oldRes.tax * 1.04);
+  }
+
+  /* Render suggestions */
+  if (!suggestions.length) {
+    el.innerHTML = `
+      <div class="suggestion-card">
+        <div class="sug-icon green">✅</div>
+        <div>
+          <div class="sug-title">You are maximising your tax savings!</div>
+          <div class="sug-desc">You have already utilised most available deductions. Great financial planning! Consider NPS or home loan to explore further savings.</div>
+        </div>
+      </div>`;
+    var tb3 = document.getElementById('sug-total-saving');
+    if (tb3) tb3.style.display = 'none';
+    return;
+  }
+
+  el.innerHTML = suggestions.map(s => `
+    <div class="suggestion-card">
+      <div class="sug-icon ${s.color}">${s.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="sug-title">${s.title}</div>
+        <div class="sug-desc">${s.desc}</div>
+        ${s.saving > 0 ? `<div class="sug-saving">You can save ${fmt(s.saving)} in tax</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  /* Show total saving */
+  var totalBox = document.getElementById('sug-total-saving');
+  var totalAmt = document.getElementById('sug-total-amt');
+  if (totalSaving > 0 && totalBox && totalAmt) {
+    totalBox.style.display = 'flex';
+    totalAmt.textContent = fmt(totalSaving);
+  } else if (totalBox) {
+    totalBox.style.display = 'none';
+  }
+}
+
+/* ===================== PPF CALCULATOR ===================== */
+var ppfChartInst = null;
+function calcPPF() {
+  var yearly  = Math.min(parseFloat(document.getElementById('ppf-yearly').value) || 0, 150000);
+  var rate    = (parseFloat(document.getElementById('ppf-rate').value) || 7.1) / 100;
+  var years   = Math.max(15, parseInt(document.getElementById('ppf-years').value) || 15);
+  var slabPct = parseFloat(document.getElementById('ppf-slab').value) / 100;
+
+  var balance     = 0;
+  var totalInvest = 0;
+  var tableRows   = [];
+  var chartLabels = [];
+  var chartBalance= [];
+
+  for (var y = 1; y <= years; y++) {
+    var opening  = balance;
+    balance     += yearly;              // deposit at start of year
+    var interest = Math.round(balance * rate);
+    balance     += interest;
+    totalInvest += yearly;
+    tableRows.push({ year: y, opening, deposit: yearly, interest, closing: balance });
+    chartLabels.push('Yr ' + y);
+    chartBalance.push(Math.round(balance));
+  }
+
+  var totalInterest = balance - totalInvest;
+  var annualTaxSave = Math.round(yearly * slabPct * 1.04);
+  var totalTaxSave  = annualTaxSave * years;
+
+  /* Stat cards */
+  document.getElementById('ppf-maturity').textContent = fmt(balance);
+  document.getElementById('ppf-invested').textContent = fmt(totalInvest);
+  document.getElementById('ppf-interest').textContent = fmt(totalInterest);
+  document.getElementById('ppf-taxsaved').textContent = fmt(totalTaxSave);
+
+  /* Summary */
+  var wealthGain = Math.round((balance / totalInvest - 1) * 100);
+  document.getElementById('ppf-summary').innerHTML = `
+    <div class="ppf-sum-row ppf-hl"><span class="sk">Maturity Amount</span><span class="sv">${fmt(balance)}</span></div>
+    <div class="ppf-sum-row"><span class="sk">Total Amount Invested</span><span class="sv">${fmt(totalInvest)}</span></div>
+    <div class="ppf-sum-row"><span class="sk">Total Interest Earned</span><span class="sv" style="color:var(--green)">${fmt(totalInterest)}</span></div>
+    <div class="ppf-sum-row"><span class="sk">Wealth Gain</span><span class="sv" style="color:var(--green)">${wealthGain}%</span></div>
+    <div class="ppf-sum-row"><span class="sk">Annual Tax Saving (80C)</span><span class="sv" style="color:var(--coral)">${fmt(annualTaxSave)}</span></div>
+    <div class="ppf-sum-row"><span class="sk">Total Tax Saved (${years} yrs)</span><span class="sv" style="color:var(--coral)">${fmt(totalTaxSave)}</span></div>
+    <div class="ppf-sum-row"><span class="sk">Effective Return incl. Tax Saving</span><span class="sv" style="color:var(--gold)">${fmt(balance + totalTaxSave)}</span></div>`;
+
+  /* Table label */
+  document.getElementById('ppf-table-label').textContent = years + ' Year Growth Table';
+
+  /* Table rows */
+  document.getElementById('ppf-tbody').innerHTML = tableRows.map(r => `
+    <tr>
+      <td>${r.year}</td>
+      <td>${fmt(r.opening)}</td>
+      <td>${fmt(r.deposit)}</td>
+      <td style="color:var(--green)">${fmt(r.interest)}</td>
+      <td style="color:var(--gold);font-weight:700">${fmt(r.closing)}</td>
+    </tr>`).join('');
+
+  /* Growth Chart */
+  var ctx = document.getElementById('ppfChart').getContext('2d');
+  if (ppfChartInst) ppfChartInst.destroy();
+  var investedArr = tableRows.map(r => Math.round(r.year * yearly));
+  ppfChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [
+        {
+          label: 'Total Balance',
+          data: chartBalance,
+          borderColor: '#f0a500',
+          backgroundColor: 'rgba(240,165,0,0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#f0a500'
+        },
+        {
+          label: 'Amount Invested',
+          data: investedArr,
+          borderColor: '#4f8ef7',
+          backgroundColor: 'rgba(79,142,247,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#4f8ef7'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#9ba3bf', font: { size: 11 }, boxWidth: 10 } }
+      },
+      scales: {
+        x: { ticks: { color: '#9ba3bf', maxTicksLimit: 10 }, grid: { color: '#2a2f45' } },
+        y: { ticks: { color: '#9ba3bf', callback: v => fmt(v) }, grid: { color: '#2a2f45' } }
+      }
+    }
+  });
+}
+
+/* ===================== REPORT TOGGLE ===================== */
+function toggleRepOption(type) {
+  var chkTax = document.getElementById('chk-tax').checked;
+  var chkPPF = document.getElementById('chk-ppf').checked;
+  var warn   = document.getElementById('rep-warning');
+  if (!chkTax && !chkPPF) {
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+/* ===================== REPORT TOGGLE ===================== */
+function toggleRepOption(type) {
+  var chkTax = document.getElementById('chk-tax').checked;
+  var chkPPF = document.getElementById('chk-ppf').checked;
+  document.getElementById('rep-warning').style.display = (!chkTax && !chkPPF) ? 'block' : 'none';
+}
+
+/* ===================== REPORT ===================== */
+function generateReport() {
+  var chkTax = document.getElementById('chk-tax').checked;
+  var chkPPF = document.getElementById('chk-ppf').checked;
+  var warn   = document.getElementById('rep-warning');
+  if (!chkTax && !chkPPF) { warn.style.display = 'block'; return; }
+  warn.style.display = 'none';
+
+  var content = document.getElementById('report-content');
+  content.style.display = 'block';
+
+  var hl = document.getElementById('rep-header-label');
+  if (chkTax && chkPPF)  hl.textContent = 'Tax & PPF Investment Report · FY 2025–26 · AY 2026–27';
+  else if (chkTax)       hl.textContent = 'Tax Computation Report · FY 2025–26 · AY 2026–27';
+  else                   hl.textContent = 'PPF Investment Report · FY 2025–26 · AY 2026–27';
+
+  document.getElementById('rep-tax-section').style.display = chkTax ? 'block' : 'none';
+  document.getElementById('rep-ppf-section').style.display = chkPPF ? 'block' : 'none';
+  document.getElementById('rep-divider').style.display     = (chkTax && chkPPF) ? 'block' : 'none';
+
+  injectProfileIntoReport();
+  var dateEl = document.getElementById('rep-generated-on');
+  if (dateEl) dateEl.textContent = 'Generated on ' + new Date().toLocaleDateString('en-IN', {day:'numeric',month:'long',year:'numeric'});
+
+  /* ---- TAX SECTION ---- */
+  if (chkTax) {
+    var income = parseFloat(document.getElementById('t-income').value) || 0;
+    var newR   = calcTaxNew(income);
+    var oldR   = calcTaxOld(income);
+    var isNew  = regime === 'new';
+    var res    = isNew ? newR : oldR;
+    var cess   = res.tax * 0.04;
+    var net    = res.tax + cess;
+
+    document.getElementById('rep-income').innerHTML =
+      '<div class="report-row"><span class="rkey">Gross Annual Income</span><span class="rval">' + fmt(income) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Standard Deduction</span><span class="rval">− ' + fmt(res.std) + '</span></div>' +
+      '<div class="report-row highlight"><span class="rkey">Taxable Income</span><span class="rval">' + fmt(res.taxable) + '</span></div>';
+
+    var dedHTML = '';
+    if (!isNew) {
+      dedHTML =
+        '<div class="report-row"><span class="rkey">Standard Deduction</span><span class="rval">₹50,000</span></div>' +
+        '<div class="report-row"><span class="rkey">Section 80C</span><span class="rval">' + fmt(res.c80c) + '</span></div>' +
+        '<div class="report-row"><span class="rkey">Section 80D</span><span class="rval">' + fmt(res.c80d) + '</span></div>' +
+        '<div class="report-row"><span class="rkey">HRA Exemption</span><span class="rval">' + fmt(res.hraExempt) + '</span></div>' +
+        '<div class="report-row"><span class="rkey">Other Deductions</span><span class="rval">' + fmt(res.other) + '</span></div>' +
+        '<div class="report-row highlight"><span class="rkey">Total Deductions</span><span class="rval">' + fmt(res.totalDed) + '</span></div>';
+    } else {
+      dedHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">New Regime: Standard deduction of ₹75,000 only.</div>';
+    }
+    document.getElementById('rep-deductions').innerHTML = dedHTML;
+
+    var taxHTML =
+      '<div class="report-row"><span class="rkey">Regime Selected</span><span class="rval" style="color:var(--gold);font-weight:600">' + (isNew ? 'New Regime' : 'Old Regime') + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Tax (before cess &amp; rebate)</span><span class="rval">' + fmt(res.tax + (res.rebate||0)) + '</span></div>' +
+      (res.rebate > 0 ? '<div class="report-row"><span class="rkey">Rebate u/s 87A</span><span class="rval" style="color:var(--green)">− ' + fmt(res.rebate) + '</span></div>' : '') +
+      '<div class="report-row"><span class="rkey">Tax after rebate</span><span class="rval">' + fmt(res.tax) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Education &amp; Health Cess (4%)</span><span class="rval">' + fmt(cess) + '</span></div>' +
+      '<div class="report-row highlight"><span class="rkey">Net Tax Payable</span><span class="rval">' + fmt(net) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Effective Tax Rate</span><span class="rval">' + (income > 0 ? ((net/income)*100).toFixed(2) : 0) + '%</span></div>';
+    document.getElementById('rep-tax').innerHTML = taxHTML;
+
+    var expTotal = expenses.reduce(function(s,e){return s+e.amt},0);
+    var cats = {};
+    expenses.forEach(function(e){cats[e.cat]=(cats[e.cat]||0)+e.amt});
+    if (!expenses.length) {
+      document.getElementById('rep-expenses').innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">No expenses added yet.</div>';
+    } else {
+      var expHTML = '<div class="report-row highlight"><span class="rkey">Total Expenses Tracked</span><span class="rval">' + fmt(expTotal) + '</span></div>';
+      Object.entries(cats).sort(function(a,b){return b[1]-a[1]}).forEach(function(entry){
+        var c=entry[0],a=entry[1];
+        expHTML += '<div class="report-row"><span class="rkey" style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:' + catColors[c] + ';display:inline-block"></span>' + c.charAt(0).toUpperCase()+c.slice(1) + '</span><span class="rval">' + fmt(a) + ' <span style="color:var(--text3)">(' + Math.round(a/expTotal*100) + '%)</span></span></div>';
+      });
+      document.getElementById('rep-expenses').innerHTML = expHTML;
+    }
+
+    var newNet = newR.tax*1.04, oldNet = oldR.tax*1.04;
+    var save = Math.abs(newNet-oldNet);
+    var better = newNet<=oldNet ? 'New Regime' : 'Old Regime';
+    document.getElementById('rep-recommendation').innerHTML =
+      '<div style="background:var(--bg3);border-radius:var(--r2);padding:16px;border-left:3px solid var(--gold)">' +
+      '<div style="font-family:system-ui,Arial,sans-serif;font-size:15px;font-weight:600;color:var(--gold);margin-bottom:10px">' + better + ' is recommended for you</div>' +
+      '<div class="report-row" style="border:none;padding:4px 0"><span class="rkey">New Regime Net Tax</span><span class="rval">' + fmt(newNet) + '</span></div>' +
+      '<div class="report-row" style="border:none;padding:4px 0"><span class="rkey">Old Regime Net Tax</span><span class="rval">' + fmt(oldNet) + '</span></div>' +
+      '<div style="margin-top:10px;font-size:13px;color:var(--text2)">Switching to <strong style="color:var(--gold)">' + better + '</strong> saves you <strong style="color:var(--green)">' + fmt(save) + '</strong> per year.</div></div>';
+  }
+
+  /* ---- PPF SECTION ---- */
+  if (chkPPF) {
+    var yearly  = Math.min(parseFloat(document.getElementById('ppf-yearly').value)||150000, 150000);
+    var rate    = (parseFloat(document.getElementById('ppf-rate').value)||7.1)/100;
+    var yrs     = Math.max(15, parseInt(document.getElementById('ppf-years').value)||15);
+    var slabPct = parseFloat(document.getElementById('ppf-slab').value)/100;
+    var bal=0, totInv=0, rows=[];
+    for (var y=1; y<=yrs; y++) {
+      var op=bal; bal+=yearly;
+      var intr=Math.round(bal*rate); bal+=intr; totInv+=yearly;
+      rows.push({year:y,opening:op,deposit:yearly,interest:intr,closing:bal});
+    }
+    var totIntr=bal-totInv, annTax=Math.round(yearly*slabPct*1.04), totTax=annTax*yrs, wg=Math.round((bal/totInv-1)*100);
+
+    document.getElementById('rep-ppf-summary').innerHTML =
+      '<div class="report-row highlight"><span class="rkey">Maturity Amount</span><span class="rval">' + fmt(bal) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Total Amount Invested</span><span class="rval">' + fmt(totInv) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Total Interest Earned</span><span class="rval">' + fmt(totIntr) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Wealth Gain</span><span class="rval">' + wg + '%</span></div>';
+
+    document.getElementById('rep-ppf-highlights').innerHTML =
+      '<div class="report-row"><span class="rkey">Yearly Investment</span><span class="rval">' + fmt(yearly) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Interest Rate</span><span class="rval">' + (rate*100).toFixed(1) + '% p.a.</span></div>' +
+      '<div class="report-row"><span class="rkey">Investment Period</span><span class="rval">' + yrs + ' Years</span></div>' +
+      '<div class="report-row"><span class="rkey">Annual Tax Saving (80C)</span><span class="rval">' + fmt(annTax) + '</span></div>' +
+      '<div class="report-row"><span class="rkey">Total Tax Saved</span><span class="rval">' + fmt(totTax) + '</span></div>';
+
+    document.getElementById('rep-ppf-tbody').innerHTML = rows.map(function(r){
+      return '<tr><td>' + r.year + '</td><td>' + fmt(r.opening) + '</td><td>' + fmt(r.deposit) + '</td><td>' + fmt(r.interest) + '</td><td style="font-weight:700">' + fmt(r.closing) + '</td></tr>';
+    }).join('');
+  }
+
+  setTimeout(function(){content.scrollIntoView({behavior:'smooth',block:'start'})},100);
+}
+
+/* ===================== SPLASH/* ===================== SPLASH ===================== */
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var s = document.getElementById('splash');
+    s.classList.add('hide');
+    setTimeout(function(){ s.style.display = 'none'; }, 700);
+  }, 2200);
+});
+
+/* ===================== THEME ===================== */
+(function(){
+  var saved = localStorage.getItem('te_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = saved === 'dark' ? '☀ Light Mode' : '🌙 Dark Mode';
+  });
+})();
+function toggleTheme() {
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀ Light Mode' : '🌙 Dark Mode';
+  localStorage.setItem('te_theme', next);
+}
+
+/* ===================== PROFILE ===================== */
+var profile = JSON.parse(localStorage.getItem('te_profile') || '{}');
+function openProfile() {
+  document.getElementById('p-name').value  = profile.name  || '';
+  document.getElementById('p-email').value = profile.email || '';
+  document.getElementById('p-phone').value = profile.phone || '';
+  document.getElementById('profileModal').classList.add('open');
+}
+function closeProfile() {
+  document.getElementById('profileModal').classList.remove('open');
+}
+function saveProfile() {
+  profile = {
+    name:  document.getElementById('p-name').value.trim(),
+    email: document.getElementById('p-email').value.trim(),
+    phone: document.getElementById('p-phone').value.trim()
+  };
+  localStorage.setItem('te_profile', JSON.stringify(profile));
+  updateProfileBtn();
+  closeProfile();
+}
+function updateProfileBtn() {
+  var btn = document.getElementById('profileBtn');
+  if (profile.name) {
+    var initials = profile.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    btn.textContent = '👤 ' + profile.name.split(' ')[0];
+  } else {
+    btn.textContent = '👤 Set Profile';
+  }
+}
+// Populate report with profile info
+function injectProfileIntoReport() {
+  var el = document.getElementById('rep-profile-info');
+  if (!el) return;
+  if (profile.name || profile.email || profile.phone) {
+    var parts = [];
+    if (profile.name)  parts.push('<strong>' + profile.name + '</strong>');
+    if (profile.email) parts.push(profile.email);
+    if (profile.phone) parts.push(profile.phone);
+    el.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+/* ===================== INIT ===================== */
+calcTax();
+renderExpenses();
+updateProfileBtn();
+
+function showTab(t, btn) {
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  btn.classList.add('active');
+  if (t === 'report') {
+    setTimeout(function() { generateReport(); }, 50);
+  }
+  if (t === 'tax') setTimeout(() => renderCompareChart(), 100);
+  if (t === 'ppf') setTimeout(() => calcPPF(), 50);
+}
+</script>
+</body>
+</html>
